@@ -1,6 +1,10 @@
-# Landlab Triangle
+# Landlab-Triangle
 
-Uses Jonathan Shewchuk's Triangle software to generate unstructured Landlab grids.
+[📚 **View Landlab Documentation**](https://landlab.readthedocs.io/)
+
+This repository adds `TriangleModelGrid`, a new Landlab grid type that enables unstructured triangular meshes. Unlike Landlab's standard structured grids, `TriangleModelGrid` allows for complex geometries with irregular boundaries, interior holes, and variable grid resolution.
+
+Uses Jonathan Shewchuk's Triangle software.
 
 ## Installation
 
