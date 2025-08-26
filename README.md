@@ -13,12 +13,14 @@ pip install triangle landlab-triangle
 ### Installing from conda-forge
 
 ```bash
-conda install -c conda-forge triangle landlab-triangle
+conda install pip
+pip install triangle
+conda install -c conda-forge landlab-triangle
 ```
 
 ## Usage
 
-### Constructor 1: Direct Initialization
+### Option 1: direct initialization
 
 ```python
 from lltriangle import TriangleModelGrid
@@ -41,7 +43,7 @@ print(f"Number of cells: {grid.number_of_cells}")
 print(f"Number of holes: {len(grid._holes)}")
 ```
 
-### Constructor 2: from_dict Class Method
+### Option 2: from a dictionary
 
 ```python
 from lltriangle import TriangleModelGrid
@@ -56,7 +58,7 @@ grid_params = {
 grid = TriangleModelGrid.from_dict(grid_params)
 ```
 
-### Constructor 3: from_shapefile Class Method
+### Option 3: from a shapefile
 
 ```python
 from lltriangle import TriangleModelGrid
@@ -72,7 +74,7 @@ grid = TriangleModelGrid.from_shapefile(
 print(f"Number of holes: {len(grid._holes)}")
 ```
 
-## Triangle Options
+## Triangle options
 
 The `triangle_opts` parameter controls the behavior of the Triangle meshing software. Common options include:
 
@@ -81,7 +83,7 @@ The `triangle_opts` parameter controls the behavior of the Triangle meshing soft
 
 **Timeout**: The `timeout` parameter (in seconds) prevents the meshing process from running indefinitely if Triangle encounters complex geometries.
 
-### Example with Area Constraint
+### Example with area constraint
 
 ```python
 # Create a grid with maximum triangle area of 0.1
