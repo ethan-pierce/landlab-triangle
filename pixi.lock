@@ -2107,8 +2107,8 @@ packages:
 - pypi: ./
   name: lltriangle
   version: '1.0'
-  sha256: 7c902803d7d1627e39af7f67a42ad00e7de19532f2aadf01e360eaab1c863c75
-  requires_python: '>=3.11'
+  sha256: 0b0050a4a663ac378dc6543b2eaae9330799c701f3eef2b836f62db78a12483e
+  requires_python: '>=3.13'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.8-hbb9b287_2.conda
   sha256: a5bf3712542ad6c37f5a091174f65fa221197547f6f2e90f227476d90ed8b901
