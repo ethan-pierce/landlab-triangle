@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from landlab.grid.base import ModelGrid
-from .graph import DualTriangleGraph
+from lltriangle.graph import DualTriangleGraph
 
 
 class TriangleModelGrid(DualTriangleGraph, ModelGrid):
