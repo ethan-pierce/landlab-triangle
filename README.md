@@ -1,6 +1,7 @@
 # landlab-triangle
 
 [**View Landlab Documentation**](https://landlab.readthedocs.io/)
+
 [**View triangle Documentation**](https://www.cs.cmu.edu/~quake/triangle.html)
 
 This repository adds `TriangleModelGrid`, a new Landlab grid type that enables unstructured triangular meshes. Unlike Landlab's standard structured grids, `TriangleModelGrid` allows for complex geometries with irregular boundaries, interior holes, and variable grid resolution.
