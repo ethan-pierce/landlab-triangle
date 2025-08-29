@@ -1150,8 +1150,8 @@ packages:
   timestamp: 1754851317174
 - pypi: ./
   name: landlab-triangle
-  version: 0.0.1
-  sha256: 7d880d2251ba40c61b0e332426dae96f7383a29bc5fb98436c54bf1022fc0f54
+  version: 0.0.2
+  sha256: 91cae37e10490788998afbbe982c344182ee0514271e77453f4caa8225833550
   requires_dist:
   - landlab>=2.10.1
   - triangle
