@@ -1,6 +1,6 @@
 [project]
 authors = [{name = "Ethan", email = "ethan.g.pierce@dartmouth.edu"}]
-name = "lltriangle"
+name = "landlab-triangle"
 requires-python = ">= 3.13"
 version = "0.0.1"
 description = "Create unstructured Landlab grids using Jonathan Shewchuk's Triangle mesh generation software"
@@ -19,10 +19,6 @@ classifiers = [
 keywords = ["landlab", "triangle", "mesh", "unstructured", "grid"]
 license = "MIT"
 license-files = ["LICENSE"]
-project-urls = {
-    "Bug Reports": "https://github.com/ethanpierce/lltriangle/issues",
-    "Source": "https://github.com/ethanpierce/lltriangle",
-}
 
 [build-system]
 build-backend = "hatchling.build"
@@ -39,9 +35,9 @@ shapely = ">=2.1.1,<3"
 landlab = ">=2.10.1,<3"
 ncurses = ">=6.5,<7"
 pytest = ">=8.4.1,<9"
+pip = ">=25.2,<26"
 
 [tool.pixi.pypi-dependencies]
-lltriangle = { path = ".", editable = true }
-triangle = "*"
+landlab-triangle = { path = ".", editable = true }
 
 [tool.pixi.tasks]

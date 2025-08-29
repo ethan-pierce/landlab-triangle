@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from lltriangle.mesh import TriangleMesh
-from lltriangle import TriangleModelGrid
+from landlab_triangle.mesh import TriangleMesh
+from landlab_triangle.triangle import TriangleModelGrid
 
 if not TriangleMesh.validate_triangle():
     pytestmark = pytest.mark.skip(reason="triangle is not installed")

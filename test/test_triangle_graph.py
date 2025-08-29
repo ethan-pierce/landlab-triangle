@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from lltriangle.graph import DualTriangleGraph
-from lltriangle.mesh import TriangleMesh
+from landlab_triangle.graph import DualTriangleGraph
+from landlab_triangle.mesh import TriangleMesh
 
 try:
     TriangleMesh.validate_triangle()

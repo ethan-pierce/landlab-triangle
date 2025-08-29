@@ -5,7 +5,7 @@ import pytest
 import shapely
 from numpy.testing import assert_array_equal
 
-from lltriangle.mesh import TriangleMesh
+from landlab_triangle.mesh import TriangleMesh
 
 if not TriangleMesh.validate_triangle():
     pytestmark = pytest.mark.skip(reason="triangle is not installed")

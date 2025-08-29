@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from lltriangle.mesh import TriangleMesh
+from landlab_triangle.mesh import TriangleMesh
 
 
 def test_triangle_noop():

@@ -1,6 +1,7 @@
-# Landlab-Triangle
+# landlab-triangle
 
-[📚 **View Landlab Documentation**](https://landlab.readthedocs.io/)
+[**View Landlab Documentation**](https://landlab.readthedocs.io/)
+[**View triangle Documentation**](https://www.cs.cmu.edu/~quake/triangle.html)
 
 This repository adds `TriangleModelGrid`, a new Landlab grid type that enables unstructured triangular meshes. Unlike Landlab's standard structured grids, `TriangleModelGrid` allows for complex geometries with irregular boundaries, interior holes, and variable grid resolution.
 
@@ -14,20 +15,12 @@ Uses Jonathan Shewchuk's Triangle software.
 pip install triangle landlab-triangle
 ```
 
-### Installing from conda-forge
-
-```bash
-conda install pip
-pip install triangle
-conda install -c conda-forge landlab-triangle
-```
-
 ## Usage
 
 ### Option 1: direct initialization
 
 ```python
-from lltriangle import TriangleModelGrid
+from landlab_triangle import TriangleModelGrid
 import numpy as np
 
 # Create a grid directly with exterior coordinates and optional holes
@@ -50,7 +43,7 @@ print(f"Number of holes: {len(grid._holes)}")
 ### Option 2: from a dictionary
 
 ```python
-from lltriangle import TriangleModelGrid
+from landlab_triangle import TriangleModelGrid
 
 # Create a grid from a dictionary with "x" and "y" keys
 grid_params = {
@@ -65,7 +58,7 @@ grid = TriangleModelGrid.from_dict(grid_params)
 ### Option 3: from a shapefile
 
 ```python
-from lltriangle import TriangleModelGrid
+from landlab_triangle import TriangleModelGrid
 
 # Create a grid from a shapefile, GeoJSON, or other supported format
 grid = TriangleModelGrid.from_shapefile(
@@ -82,7 +75,7 @@ print(f"Number of holes: {len(grid._holes)}")
 
 The `triangle_opts` parameter controls the behavior of the Triangle meshing software. Common options include:
 
-- **q**: Quality mesh generation - ensures no angles smaller than N degrees
+- **q**: Quality mesh generation - ensures no angles smaller than N degrees (defaults to 20)
 - **a**: Area constraint - limits the maximum area of triangles
 
 **Timeout**: The `timeout` parameter (in seconds) prevents the meshing process from running indefinitely if Triangle encounters complex geometries.

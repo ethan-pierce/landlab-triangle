@@ -7,7 +7,7 @@ from landlab.graph.graph import Graph
 from landlab.graph.sort.sort import reverse_one_to_many
 from landlab.graph.sort.sort import sort_links_at_patch
 
-from lltriangle.mesh import TriangleMesh
+from landlab_triangle.mesh import TriangleMesh
 
 
 class TriangleGraph(Graph):
