@@ -38,9 +38,13 @@ jobs:
           CIBW_BUILD: "cp313-*"
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_ENVIRONMENT_WINDOWS: "CC=gcc"
-          # The bundled Triangle is a standalone exe, not a linked extension,
-          # so there are no shared libraries to vendor in.
-          CIBW_REPAIR_WHEEL_COMMAND: ""
+          # Newer manylinux: modern GCC, and numpy/scipy ship matching wheels.
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          # Linux uses auditwheel (default) to set the manylinux tag. The
+          # standalone binary needs no repair on macOS/Windows.
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/test"
 
