@@ -206,6 +206,9 @@ class TriangleMesh:
         """Identify interior boundaries within a source Polygon."""
         interiors = list(shape.interiors)
 
+        # Seed a local generator so hole placement is reproducible
+        rng = np.random.default_rng(0)
+
         holes = []
         for ring in interiors:
             area = shapely.build_area(ring)
@@ -216,8 +219,8 @@ class TriangleMesh:
                 minx, miny, maxx, maxy = ring.bounds
 
                 while invalid:
-                    x = np.random.uniform(minx, maxx)
-                    y = np.random.uniform(miny, maxy)
+                    x = rng.uniform(minx, maxx)
+                    y = rng.uniform(miny, maxy)
                     test_point = shapely.Point(x, y)
 
                     if not shape.contains(test_point):
