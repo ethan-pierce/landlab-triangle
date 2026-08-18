@@ -20,6 +20,7 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
+import warnings
 
 import geopandas as gpd
 import numpy as np
@@ -141,17 +142,17 @@ class TriangleMesh:
 
         # Omitting the quality flag will lead to bad meshes
         if "q" not in options:
-            raise Warning("Cannot guarantee mesh quality: consider adding 'q' to opts.")
+            warnings.warn("Cannot guarantee mesh quality: consider adding 'q' to opts.")
 
         # Most use cases probably involve Planar Straight Line Graphs
         if "p" not in options:
-            raise Warning(
+            warnings.warn(
                 "If your region is a Planar Straight Line Graph, add 'p' to opts."
             )
 
         # And, users probably want a conforming Delaunay triangulation
         if "D" not in options:
-            raise Warning(
+            warnings.warn(
                 "If you want a conforming Delaunay triangulation, add 'D' to opts."
             )
 
