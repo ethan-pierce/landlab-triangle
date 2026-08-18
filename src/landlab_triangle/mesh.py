@@ -108,7 +108,12 @@ class TriangleMesh:
     def __init__(self, poly: shapely.Polygon, opts: str = default_opts, timeout=10):
         """Initialize this instance with a Shapely polygon object."""
         self._poly = poly
-        self._vertices = shapely.get_coordinates(self._poly)
+        # Duplicate vertices (including ring closing points) crash Triangle
+        self._vertices = (
+            pd.DataFrame(shapely.get_coordinates(self._poly))
+            .drop_duplicates()
+            .to_numpy()
+        )
         self._segments = self._segment(self._poly)
         self._holes = self.identify_holes(self._poly)
 

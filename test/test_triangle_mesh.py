@@ -34,7 +34,8 @@ def test_init_from_points():
     """Test initialization from list of points."""
     mesh = TriangleMesh.from_points(xy_points, opts="pqDevjz")
 
-    assert mesh._vertices.shape == (xy_points.shape[0], 2)
+    # The final point duplicates the first, so it is dropped from _vertices.
+    assert mesh._vertices.shape == (xy_points.shape[0] - 1, 2)
     assert mesh._segments.shape == (xy_points.shape[0] - 1, 2)
     assert mesh._holes is None
     assert mesh._opts == "pqDevjz"
@@ -58,12 +59,10 @@ def test_init_from_geojson(geojson_concave_polygon):
             [10.0, 10.0],
             [5.0, 15.0],
             [0.0, 10.0],
-            [0.0, 0.0],
             [2.0, 2.0],
             [8.0, 2.0],
             [8.0, 8.0],
             [2.0, 8.0],
-            [2.0, 2.0],
         ],
     )
 
@@ -71,7 +70,7 @@ def test_init_from_geojson(geojson_concave_polygon):
 
     assert_array_equal(
         mesh._segments,
-        [[6, 7], [7, 8], [8, 9], [9, 6], [0, 1], [1, 2], [2, 3], [3, 4], [4, 0]],
+        [[5, 6], [6, 7], [7, 8], [8, 5], [0, 1], [1, 2], [2, 3], [3, 4], [4, 0]],
     )
 
     assert mesh._opts == "pqDevjz"
@@ -95,3 +94,27 @@ def test_segment(geojson_concave_polygon):
         point = shapely.Point(hole)
 
         assert not mesh._poly.contains(point)
+
+
+def test_no_duplicate_vertices(geojson_concave_polygon):
+    """Vertices passed to Triangle must not contain exact duplicates, which
+    trip an out-of-bounds read in Triangle's duplicate-vertex handling."""
+    for mesh in (
+        TriangleMesh.from_points(xy_points, opts="pqDevjz"),
+        TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz"),
+    ):
+        unique = np.unique(mesh._vertices, axis=0)
+        assert unique.shape[0] == mesh._vertices.shape[0]
+
+
+def test_geojson_then_points_does_not_crash(geojson_concave_polygon):
+    """Reading a geojson loads GDAL, which shifts the process memory layout.
+    A duplicate vertex would then crash Triangle; triangulating from points
+    afterwards in the same process must still succeed."""
+    TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz").triangulate()
+
+    mesh = TriangleMesh.from_points(xy_points, opts="pqDevjz")
+    mesh.triangulate()
+
+    assert mesh.delaunay is not None
+    assert mesh.voronoi is not None
