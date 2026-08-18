@@ -16,6 +16,7 @@ https://www.cs.cmu.edu/~quake/triangle.switch.html
 
 from __future__ import annotations
 
+import os
 import pathlib
 import shutil
 import subprocess
@@ -31,12 +32,9 @@ import shapely
 class TriangleMesh:
     """Generate a mesh from a shapefile or array of points.
 
-    Makes a subprocess call to the Triangle command-line interface, which needs
-    to be installed separately. The most reliable way to do so is with::
-
-        conda install -c conda-forge triangle
-
-    but users could also install and compile triangle directly.
+    Makes a subprocess call to the Triangle command-line interface. A compiled
+    Triangle binary ships with the package, so no separate install is needed;
+    a 'triangle' binary on PATH is used as a fallback.
 
     Parameters
     ----------
@@ -159,14 +157,30 @@ class TriangleMesh:
         return options
 
     @staticmethod
+    def _bundled_triangle():
+        """Locate the Triangle binary shipped with the package, if present."""
+        name = "triangle.exe" if os.name == "nt" else "triangle"
+        path = pathlib.Path(__file__).parent / "_triangle_bin" / name
+        return path if path.exists() else None
+
+    @staticmethod
     def validate_triangle(triangle=None):
-        triangle = shutil.which("triangle" if triangle is None else triangle)
+        if triangle is not None:
+            triangle = shutil.which(triangle)
+        else:
+            # Prefer the bundled binary, fall back to one on PATH.
+            bundled = TriangleMesh._bundled_triangle()
+            triangle = str(bundled) if bundled else shutil.which("triangle")
 
         if not triangle:
             raise FileNotFoundError(
-                "Unable to locate Triangle in PATH. You can install it with:"
-                " conda install -c conda-forge triangle"
+                "Unable to locate Triangle. It ships with landlab-triangle, so try"
+                " reinstalling the package, or place a 'triangle' binary on your PATH."
             )
+
+        # Wheel installs don't always preserve the executable bit.
+        if os.name != "nt" and not os.access(triangle, os.X_OK):
+            os.chmod(triangle, 0o755)
 
         subprocess.run([triangle], capture_output=True, check=True)
 
