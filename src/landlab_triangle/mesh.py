@@ -317,7 +317,7 @@ class TriangleMesh:
         if holes_header[0] > 0:
             holes = np.insert(holes, 0, np.arange(holes.shape[0]), axis=1)
 
-        with open(path, "w") as outfile:
+        with open(path, "w", newline="") as outfile:
             np.savetxt(outfile, vertex_header, fmt="%d", newline="\r\n")
             np.savetxt(outfile, vertices, fmt="%f", newline="\r\n")
             np.savetxt(outfile, segment_header, fmt="%d", newline="\r\n")
