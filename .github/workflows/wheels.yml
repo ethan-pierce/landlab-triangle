@@ -36,6 +36,8 @@ jobs:
       - uses: pypa/cibuildwheel@v2.23.3
         env:
           CIBW_BUILD: "cp313-*"
+          # musl has no wheels for the GDAL/geo stack our deps pull in.
+          CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_ENVIRONMENT_WINDOWS: "CC=gcc"
           # Newer manylinux: modern GCC, and numpy/scipy ship matching wheels.
