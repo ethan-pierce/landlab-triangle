@@ -13,8 +13,12 @@ Uses Jonathan Shewchuk's Triangle software.
 ### Installing from PyPI
 
 ```bash
-pip install triangle landlab-triangle
+pip install landlab-triangle
 ```
+
+A compiled build of Triangle ships inside the wheel, so there is nothing else
+to install. See [`NOTICE`](NOTICE) for the terms of the bundled Triangle, which
+remains under Jonathan Shewchuk's non-commercial license.
 
 ## Usage
 

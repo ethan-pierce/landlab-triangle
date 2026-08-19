@@ -1,0 +1,16 @@
+landlab-triangle
+Copyright (c) landlab-triangle contributors. Licensed under the MIT License
+(see LICENSE).
+
+This package bundles a compiled build of Triangle, a mesh generator and
+Delaunay triangulator by Jonathan Richard Shewchuk. Triangle is NOT covered by
+the MIT License. Its source and license are included at
+src/landlab_triangle/_triangle_src/ (LICENSE).
+
+    Triangle
+    Copyright 1993, 1995, 1997, 1998, 2002, 2005 Jonathan Richard Shewchuk
+
+Triangle may be freely redistributed provided the copyright notices are
+retained and no compensation is received. Private, research, and institutional
+use is free. It may not be sold or included in a commercial system except by
+direct arrangement with the author. See the bundled LICENSE for full terms.
