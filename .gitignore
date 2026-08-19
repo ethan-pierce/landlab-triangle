@@ -6,4 +6,10 @@
 src/landlab_triangle/_triangle_bin/
 
 # build output
+dist/
 dist_test*/
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
