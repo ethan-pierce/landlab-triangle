@@ -109,9 +109,7 @@ class TriangleMesh:
         self._poly = poly
         # Duplicate vertices (including ring closing points) crash Triangle
         self._vertices = (
-            pd.DataFrame(shapely.get_coordinates(self._poly))
-            .drop_duplicates()
-            .to_numpy()
+            pd.DataFrame(shapely.get_coordinates(self._poly)).drop_duplicates().to_numpy()
         )
         self._segments = self._segment(self._poly)
         self._holes = self.identify_holes(self._poly)
@@ -140,18 +138,23 @@ class TriangleMesh:
 
         # Omitting the quality flag will lead to bad meshes
         if "q" not in options:
-            warnings.warn("Cannot guarantee mesh quality: consider adding 'q' to opts.")
+            warnings.warn(
+                "Cannot guarantee mesh quality: consider adding 'q' to opts.",
+                stacklevel=2,
+            )
 
         # Most use cases probably involve Planar Straight Line Graphs
         if "p" not in options:
             warnings.warn(
-                "If your region is a Planar Straight Line Graph, add 'p' to opts."
+                "If your region is a Planar Straight Line Graph, add 'p' to opts.",
+                stacklevel=2,
             )
 
         # And, users probably want a conforming Delaunay triangulation
         if "D" not in options:
             warnings.warn(
-                "If you want a conforming Delaunay triangulation, add 'D' to opts."
+                "If you want a conforming Delaunay triangulation, add 'D' to opts.",
+                stacklevel=2,
             )
 
         return options
@@ -272,7 +275,10 @@ class TriangleMesh:
 
         for ring in poly.interiors:
             lines = list(
-                map(shapely.LineString, zip(ring.coords[:-1], ring.coords[1:]))
+                map(
+                    shapely.LineString,
+                    zip(ring.coords[:-1], ring.coords[1:], strict=True),
+                )
             )
 
             for line in lines:
@@ -291,7 +297,7 @@ class TriangleMesh:
         boundary = list(
             map(
                 shapely.LineString,
-                zip(poly.exterior.coords[:-1], poly.exterior.coords[1:]),
+                zip(poly.exterior.coords[:-1], poly.exterior.coords[1:], strict=True),
             )
         )
 
@@ -299,12 +305,10 @@ class TriangleMesh:
             x1, y1 = line.coords[0]
             x2, y2 = line.coords[1]
 
-            start_vertex = np.argwhere(
-                (self._vertices[:, 0] == x1) & (self._vertices[:, 1] == y1)
-            )[0]
-            end_vertex = np.argwhere(
-                (self._vertices[:, 0] == x2) & (self._vertices[:, 1] == y2)
-            )[0]
+            start_vertex = np.argwhere((self._vertices[:, 0] == x1) & (self._vertices[:, 1] == y1))[
+                0
+            ]
+            end_vertex = np.argwhere((self._vertices[:, 0] == x2) & (self._vertices[:, 1] == y2))[0]
 
             segments.append([int(start_vertex[0]), int(end_vertex[0])])
 

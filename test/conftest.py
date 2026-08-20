@@ -51,9 +51,7 @@ def geojson_circular_polygon(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def geojson_interior_rings(tmp_path_factory):
-    path_to_file = (
-        tmp_path_factory.mktemp("geojson") / "polygon_two_interior_rings.geojson"
-    )
+    path_to_file = tmp_path_factory.mktemp("geojson") / "polygon_two_interior_rings.geojson"
     with open(path_to_file, "w") as fp:
         json.dump(
             {

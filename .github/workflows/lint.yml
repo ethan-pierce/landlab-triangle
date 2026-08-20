@@ -1,0 +1,27 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Keep `version` in sync with the ruff pin in pyproject.toml
+      # ([tool.pixi.feature.dev.dependencies]) so CI and local pixi runs agree.
+      - name: Ruff lint
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: 0.16.3
+          args: check src test
+
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: 0.16.3
+          args: format --check src test
