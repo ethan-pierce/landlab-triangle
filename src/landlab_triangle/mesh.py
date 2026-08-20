@@ -114,12 +114,10 @@ class TriangleMesh:
         self._segments = self._segment(self._poly)
         self._holes = self.identify_holes(self._poly)
 
-        # Command-line options to pass to Triangle
         self._opts = self.validate_options(opts)
-        self._timeout = timeout  # How long to let Triangle run before terminating
+        self._timeout = timeout
         self._triangle = self.validate_triangle()
 
-        # Dictionaries that are constructed by triangulate()
         self.delaunay = None
         self.voronoi = None
 
@@ -325,7 +323,6 @@ class TriangleMesh:
         vertex_header = np.array([vertices.shape[0], 2, 0, 0])[np.newaxis]
         segment_header = np.array([segments.shape[0], 0])[np.newaxis]
 
-        # If there are no holes, the header should just be [0]
         if hasattr(holes, "shape"):
             holes_header = np.array([holes.shape[0]])[np.newaxis]
         else:
@@ -334,7 +331,6 @@ class TriangleMesh:
         vertices = np.insert(vertices, 0, np.arange(vertices.shape[0]), axis=1)
         segments = np.insert(segments, 0, np.arange(segments.shape[0]), axis=1)
 
-        # If there are no holes, don't write anything to the .poly file
         if holes_header[0] > 0:
             holes = np.insert(holes, 0, np.arange(holes.shape[0]), axis=1)
 
@@ -345,7 +341,6 @@ class TriangleMesh:
             np.savetxt(outfile, segments, fmt="%d", newline="\r\n")
             np.savetxt(outfile, holes_header, fmt="%d", newline="\r\n")
 
-            # If there are no holes, there's nothing to write here
             if holes_header[0] > 0:
                 np.savetxt(outfile, holes, fmt="%f")
 
@@ -377,16 +372,11 @@ class TriangleMesh:
             ),
         }
 
-        # Triangle writes out rays and edges to the same file,
-        # So we need to do some extra work to only keep the Voronoi edges.
-        # Read in the data as if everything was defined as a ray,
+        # Triangle mixes infinite rays into the edge file; tail == -1 marks a ray.
         faces = pd.read_csv(
             v_edge, sep=r"\s+", skiprows=1, names=["1", "2", "3", "4", "5"], comment="#"
         )[lambda x: x["3"] != -1]
-        # then drop any row where the third element ('tail') is undefined.
 
-        # Now we can reshape the array to match the shape we expect from links.
-        # Recall that we have discarded any boundary edges from the Voronoi graph.
         faces = faces.drop(["4", "5"], axis=1).rename(
             columns={"1": "Link", "2": "head", "3": "tail"}
         )
@@ -402,9 +392,6 @@ class TriangleMesh:
 
     def triangulate(self):
         """Perform the Delaunay triangulation."""
-        # ----------------------------
-        # Set up a temporary directory
-        # ----------------------------
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             tmp_path = pathlib.Path(tmpdir)
 
@@ -420,7 +407,6 @@ class TriangleMesh:
                 cwd=tmp_path,
             )
 
-            # if result.returncode == 0:
             try:
                 self.delaunay, self.voronoi = self._read_mesh_files(
                     node=tmp_path / "tri.1.node",
@@ -434,10 +420,3 @@ class TriangleMesh:
                     "Triangle failed to generate the mesh, raising the following error:\n"
                     + result.stdout.decode()
                 ) from error
-
-            # else:
-            #     # Triangle sends more informative error messages to stdout
-            #     raise OSError(
-            #         "Triangle failed to generate the mesh, raising the following error:\n"
-            #         + result.stdout.decode()
-            #     )
