@@ -12,21 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Keep `version` in sync with the ruff pin in pyproject.toml
-      # ([tool.pixi.feature.dev.dependencies]) so CI and local pixi runs agree.
-      # `src: ""` stops the action appending the workspace path to `args`;
-      # without it the effective target is `src test .`, which also lints
-      # README code blocks and diverges from the `pixi run` tasks.
       - name: Ruff lint
         uses: astral-sh/ruff-action@v3
         with:
           version: 0.16.3
-          src: ""
-          args: check src test
+          args: check
+          src: src test
 
       - name: Ruff format check
         uses: astral-sh/ruff-action@v3
         with:
           version: 0.16.3
-          src: ""
-          args: format --check src test
+          args: format --check
+          src: src test
