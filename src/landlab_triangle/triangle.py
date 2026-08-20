@@ -6,8 +6,9 @@ import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from landlab.grid.base import ModelGrid
+
+from landlab_triangle import ugrid
 from landlab_triangle.graph import DualTriangleGraph
 
 
@@ -93,9 +94,7 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
             xy_of_reference=xy_of_reference,
         )
 
-        self._node_status = np.full(
-            self.number_of_nodes, self.BC_NODE_IS_CORE, dtype=np.uint8
-        )
+        self._node_status = np.full(self.number_of_nodes, self.BC_NODE_IS_CORE, dtype=np.uint8)
         self._node_status[self.perimeter_nodes] = self.BC_NODE_IS_FIXED_VALUE
 
     @classmethod
@@ -133,47 +132,24 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
         return fig
 
     def save(self, path, clobber=False):
-        """Save a grid and fields.
+        """Save the grid and all its fields to a CF-UGRID netCDF file.
 
-        This method uses pickle to save the grid as a pickle file.
-        At the time of coding, this is the only convenient output format
-        for unstructured grids, but support for netCDF is likely coming.
-
-        All fields will be saved, along with the grid.
-
-        The recommended suffix for the save file is '.grid'. This will
-        be added to your save if you don't include it.
-
-        This method is equivalent to
-        :py:func:`~landlab.io.native_landlab.save_grid`, and
-        :py:func:`~landlab.io.native_landlab.load_grid` can be used to
-        load these files.
-
-        Caution: Pickling can be slow, and can produce very large files.
-        Caution 2: Future updates to Landlab could potentially render old
-        saves unloadable.
+        Writes the primal Delaunay and dual Voronoi meshes as two
+        ``mesh_topology`` variables in one file, readable again by :meth:`load`
+        or by ParaView/QGIS/xarray/uxarray. A ``.nc`` suffix is added if
+        missing. Returns the path written.
 
         Parameters
         ----------
         path : str
             Path to output file.
-        clobber : bool (defaults to false)
-            Set to true to allow overwriting
-
-        Returns
-        -------
-        str
-            The name of the saved file (with the ".grid" extension).
-
-        Examples
-        --------
+        clobber : bool, optional
+            Allow overwriting an existing file (default False).
         """
-        import pickle
-
         path = pathlib.Path(path)
 
-        if path.suffix != ".grid":
-            path = path.with_suffix(path.suffix + ".grid")
+        if path.suffix != ".nc":
+            path = path.with_suffix(path.suffix + ".nc")
 
         if path.exists() and not clobber:
             raise ValueError(
@@ -182,7 +158,34 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
                 "'clobber' keyword to True"
             )
 
-        with open(path, "wb") as fp:
-            pickle.dump(self, fp)
+        return ugrid.write_ugrid(self, path)
 
-        return str(path)
+    @classmethod
+    def load(cls, path):
+        """Reconstruct a grid from a ``.nc`` file written by :meth:`save`.
+
+        Rebuilds from the stored topology alone; the Triangle binary is never
+        re-run. Topology passes through the same construction tail as a fresh
+        grid, then fields and node status are restored.
+        """
+        data = ugrid.read_ugrid(path)
+
+        grid = cls.__new__(cls)
+        grid._delaunay = data["delaunay"]
+        grid._voronoi = data["voronoi"]
+
+        DualTriangleGraph._build_from_dicts(grid, sort=False)
+
+        ModelGrid.__init__(
+            grid,
+            xy_axis_name=("x", "y"),
+            xy_axis_units=data["units"],
+        )
+
+        grid._node_status = np.asarray(data["node_status"], dtype=np.uint8)
+
+        for location, field_group in data["fields"].items():
+            for name, values in field_group.items():
+                grid.add_field(name, values, at=location, clobber=True)
+
+        return grid

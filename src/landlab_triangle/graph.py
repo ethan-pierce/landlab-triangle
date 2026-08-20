@@ -1,11 +1,9 @@
 import numpy as np
 import shapely
-from shapely.validation import explain_validity
-
 from landlab.graph.dual import DualGraph
 from landlab.graph.graph import Graph
-from landlab.graph.sort.sort import reverse_one_to_many
-from landlab.graph.sort.sort import sort_links_at_patch
+from landlab.graph.sort.sort import reverse_one_to_many, sort_links_at_patch
+from shapely.validation import explain_validity
 
 from landlab_triangle.mesh import TriangleMesh
 
@@ -20,7 +18,7 @@ class TriangleGraph(Graph):
         sort: bool = False,
     ):
         polygon = shapely.Polygon(
-            zip(exterior_y_and_x[1], exterior_y_and_x[0]), holes=holes
+            zip(exterior_y_and_x[1], exterior_y_and_x[0], strict=True), holes=holes
         )
 
         if not polygon.is_valid:
@@ -34,9 +32,7 @@ class TriangleGraph(Graph):
         mesh_generator.triangulate()
         self._delaunay = mesh_generator.delaunay
 
-        nodes_at_link = np.ascontiguousarray(
-            self._delaunay["links"][["head", "tail"]].values
-        )
+        nodes_at_link = np.ascontiguousarray(self._delaunay["links"][["head", "tail"]].values)
         _, links_at_patch = self._get_nodes_and_links_at_patch()
 
         self.perimeter_nodes = np.flatnonzero(self._delaunay["nodes"]["BC"] == 1)
@@ -73,9 +69,7 @@ class TriangleGraph(Graph):
         return nodes_at_patch, links_at_patch
 
     @classmethod
-    def from_shapefile(
-        cls, path_to_file: str, triangle_opts: str = "", timeout: float = 10
-    ):
+    def from_shapefile(cls, path_to_file: str, triangle_opts: str = "", timeout: float = 10):
         """Initialize a TriangleGraph from an input file."""
         polygon = TriangleMesh.read_input_file(path_to_file)
         nodes_y = np.array(polygon.exterior.xy[1])
@@ -100,7 +94,7 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
         sort: bool = False,
     ):
         polygon = shapely.Polygon(
-            zip(exterior_y_and_x[1], exterior_y_and_x[0]), holes=holes
+            zip(exterior_y_and_x[1], exterior_y_and_x[0], strict=True), holes=holes
         )
 
         if not polygon.is_valid:
@@ -113,10 +107,17 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
 
         mesh_generator.triangulate()
         self._delaunay = mesh_generator.delaunay
+        self._voronoi = mesh_generator.voronoi
 
-        nodes_at_link = np.ascontiguousarray(
-            self._delaunay["links"][["head", "tail"]].values
-        )
+        self._build_from_dicts(sort=sort)
+
+    def _build_from_dicts(self, sort: bool = False):
+        """Build the dual graph from the ``_delaunay`` and ``_voronoi`` dicts.
+
+        Shared by fresh triangulation and UGRID load so both build the grid the
+        same way, recomputing the primal-dual bridge rather than storing it.
+        """
+        nodes_at_link = np.ascontiguousarray(self._delaunay["links"][["head", "tail"]].values)
         _, links_at_patch = self._get_nodes_and_links_at_patch()
 
         self.perimeter_nodes = np.flatnonzero(self._delaunay["nodes"]["BC"] == 1)
@@ -129,7 +130,6 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
             sort=False,
         )
 
-        self._voronoi = mesh_generator.voronoi
         corners_at_face = self._voronoi["faces"][["head", "tail"]].values
 
         node_at_cell, cells_at_node = self._number_cells()
@@ -172,9 +172,7 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
 
     def _number_cells(self) -> tuple[np.ndarray, np.ndarray]:
         """Map between grid cells and nodes."""
-        nodes_at_cell = self._delaunay["nodes"]["Node"][
-            self._delaunay["nodes"]["BC"] == 0
-        ].values
+        nodes_at_cell = self._delaunay["nodes"]["Node"][self._delaunay["nodes"]["BC"] == 0].values
         cells_at_node = np.array(
             [
                 np.argwhere(nodes_at_cell == i)[0][0] if i in nodes_at_cell else -1
@@ -203,9 +201,7 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
 
             for corner in corners_at_cell[cell]:
                 if corner != -1:
-                    possible_faces += list(
-                        faces_at_corner[corner][faces_at_corner[corner] != -1]
-                    )
+                    possible_faces += list(faces_at_corner[corner][faces_at_corner[corner] != -1])
 
             unique, count = np.unique(possible_faces, return_counts=True)
             faces[cell].extend(unique[count > 1])

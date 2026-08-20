@@ -15,15 +15,14 @@ except FileNotFoundError:
 
 @pytest.fixture
 def square_graph():
-    return DualTriangleGraph(
-        ([0, 0, 11, 11], [0, 10, 10, 0]), triangle_opts="pqa1Djevz"
-    )
+    return DualTriangleGraph(([0, 0, 11, 11], [0, 10, 10, 0]), triangle_opts="pqa1Djevz")
 
 
 @pytest.mark.parametrize("point", ("corner", "node"))
 def test_all_points_in_box(square_graph, point):
-    x, y = getattr(square_graph, f"x_of_{point}"), getattr(
-        square_graph, f"y_of_{point}"
+    x, y = (
+        getattr(square_graph, f"x_of_{point}"),
+        getattr(square_graph, f"y_of_{point}"),
     )
 
     assert np.all(x >= 0.0) and np.all(x <= 10.0)
@@ -41,9 +40,7 @@ def test_no_zero_area_polygons(square_graph, polygon):
 
 
 def test_graph_init():
-    graph = DualTriangleGraph(
-        ([0, 0, 11, 11], [0, 10, 10, 0]), triangle_opts="pqa1Djevz"
-    )
+    graph = DualTriangleGraph(([0, 0, 11, 11], [0, 10, 10, 0]), triangle_opts="pqa1Djevz")
     assert graph.number_of_corners == graph.number_of_patches
 
 
@@ -55,9 +52,7 @@ def test_graph_init_zero_length_edges():
 def test_raise_error_if_no_interior_nodes(geojson_concave_polygon):
     """If no cells are generated, raise a ValueError."""
     with pytest.raises(ValueError):
-        DualTriangleGraph.from_shapefile(
-            geojson_concave_polygon, triangle_opts="pqa100Djevz"
-        )
+        DualTriangleGraph.from_shapefile(geojson_concave_polygon, triangle_opts="pqa100Djevz")
 
 
 def test_circular_polygon(geojson_circular_polygon):
@@ -81,9 +76,7 @@ def test_circular_polygon(geojson_circular_polygon):
 
 def test_generate_graph_from_geojson(geojson_concave_polygon):
     """Test the graph constructor from a geojson file."""
-    graph = DualTriangleGraph.from_shapefile(
-        geojson_concave_polygon, triangle_opts="pqa10Djevz"
-    )
+    graph = DualTriangleGraph.from_shapefile(geojson_concave_polygon, triangle_opts="pqa10Djevz")
 
     assert graph.number_of_nodes == 25
     assert graph.number_of_links == 51
@@ -119,9 +112,7 @@ def test_generate_graph_from_geojson(geojson_concave_polygon):
 
 
 def test_multiple_interior_rings(geojson_interior_rings):
-    graph = DualTriangleGraph.from_shapefile(
-        geojson_interior_rings, triangle_opts="pq10a10Djevz"
-    )
+    graph = DualTriangleGraph.from_shapefile(geojson_interior_rings, triangle_opts="pq10a10Djevz")
 
     assert np.all(graph.x_of_node >= 0.0) and np.all(graph.x_of_node <= 10.0)
     assert np.all(graph.y_of_node >= 0.0) and np.all(graph.y_of_node <= 10.0)
