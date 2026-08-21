@@ -75,6 +75,11 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
         TriangleModelGrid
             A newly-created grid.
 
+        Raises
+        ------
+        TriangleError
+            If Triangle fails to mesh the domain or exceeds ``timeout`` seconds.
+
         Examples
         --------
         """
