@@ -53,6 +53,24 @@ jobs:
           name: wheels-${{ matrix.os }}-${{ matrix.archs }}
           path: wheelhouse/*.whl
 
+  tests:
+    # The wheel matrix installs only pytest, so the uxarray round-trip tests skip
+    # there; run them once here where uxarray is installed.
+    name: tests (full suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install package and test dependencies
+        run: pip install . uxarray pytest
+
+      - name: Run tests
+        run: pytest test
+
   sdist:
     runs-on: ubuntu-latest
     steps:
