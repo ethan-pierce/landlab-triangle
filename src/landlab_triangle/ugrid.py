@@ -55,6 +55,9 @@ def write_ugrid(grid, path) -> str:
     units = getattr(grid, "axis_units", ("-", "-"))
     x_units, y_units = str(units[0]), str(units[1])
 
+    axis_name = getattr(grid, "axis_name", ("x", "y"))
+    xy_of_reference = getattr(grid, "xy_of_reference", (0.0, 0.0))
+
     data_vars = {}
 
     data_vars["mesh2d_delaunay"] = xr.DataArray(
@@ -159,6 +162,10 @@ def write_ugrid(grid, path) -> str:
                 values = values.astype(np.int8)
                 attrs["dtype"] = "bool"
 
+            field_units = group.dataset[name].attrs.get("units")
+            if field_units is not None:
+                attrs["units"] = str(field_units)
+
             data_vars[f"{name}_at_{location}"] = xr.DataArray(
                 np.ascontiguousarray(values), dims=dim, attrs=attrs
             )
@@ -168,6 +175,8 @@ def write_ugrid(grid, path) -> str:
         attrs={
             "Conventions": "UGRID-1.0",
             "landlab_triangle_version": _version(),
+            "landlab_xy_axis_name": [str(axis_name[0]), str(axis_name[1])],
+            "landlab_xy_of_reference": [float(xy_of_reference[0]), float(xy_of_reference[1])],
         },
     )
 
@@ -191,9 +200,10 @@ def read_ugrid(path) -> dict:
     """Read a file written by :func:`write_ugrid`.
 
     Returns a dict with the ``"delaunay"`` and ``"voronoi"`` dicts the
-    construction tail expects, plus ``"node_status"``, ``"units"``, and
-    ``"fields"`` (``{location: {name: array}}``). Raises ``ValueError`` on a
-    file that landlab-triangle did not write.
+    construction tail expects, plus ``"node_status"``, ``"units"``,
+    ``"axis_name"``, ``"xy_of_reference"``, and ``"fields"``
+    (``{location: {name: (array, units)}}``). Raises ``ValueError`` on a file
+    that landlab-triangle did not write.
     """
     with xr.open_dataset(path, engine="netcdf4") as dataset:
         dataset = dataset.load()
@@ -307,17 +317,22 @@ def read_ugrid(path) -> dict:
         if variable.attrs.get("dtype") == "bool":
             values = values.astype(bool)
 
-        fields[landlab_location][field_name] = values
+        fields[landlab_location][field_name] = (values, variable.attrs.get("units", "-"))
 
     units = (
         dataset["mesh2d_delaunay_node_x"].attrs.get("units", "-"),
         dataset["mesh2d_delaunay_node_y"].attrs.get("units", "-"),
     )
 
+    axis_name = dataset.attrs.get("landlab_xy_axis_name", ("x", "y"))
+    xy_of_reference = dataset.attrs.get("landlab_xy_of_reference", (0.0, 0.0))
+
     return {
         "delaunay": delaunay,
         "voronoi": voronoi,
         "node_status": node_status,
         "units": units,
+        "axis_name": tuple(str(name) for name in axis_name),
+        "xy_of_reference": tuple(float(value) for value in xy_of_reference),
         "fields": fields,
     }

@@ -15,7 +15,7 @@ if not TriangleMesh.validate_triangle():
 @pytest.fixture(scope="module")
 def square_grid():
     return TriangleModelGrid(
-        ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
+        [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa1Devjz"
     )
 
 
@@ -120,12 +120,41 @@ def test_roundtrip_closed_interior_node_keeps_cells(square_grid, tmp_path):
 def test_roundtrip_units(tmp_path):
     """Axis units survive the round-trip."""
     grid = TriangleModelGrid(
-        ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]),
-        triangle_opts="pqa1Devjz",
+        [0.0, 10.0, 10.0, 0.0],
+        [-1.0, -1.0, 11.0, 11.0],
+        triangle_options="pqa1Devjz",
         xy_axis_units=("m", "m"),
     )
     loaded = TriangleModelGrid.load(grid.save(str(tmp_path / "mesh.nc")))
     assert tuple(loaded.axis_units) == ("m", "m")
+
+
+def test_roundtrip_preserves_link_orientation(square_grid, tmp_path):
+    loaded = TriangleModelGrid.load(square_grid.save(str(tmp_path / "mesh.nc")))
+    theta = np.mod(loaded.angle_of_link, 2.0 * np.pi)
+    assert np.all((theta < 0.75 * np.pi) | (theta >= 1.75 * np.pi))
+
+
+def test_roundtrip_preserves_axis_metadata(tmp_path):
+    grid = TriangleModelGrid(
+        [0.0, 10.0, 10.0, 0.0],
+        [-1.0, -1.0, 11.0, 11.0],
+        triangle_options="pqa1Devjz",
+        xy_axis_name=("easting", "northing"),
+        xy_of_reference=(500000.0, 4000000.0),
+    )
+    loaded = TriangleModelGrid.load(grid.save(str(tmp_path / "mesh.nc")))
+    assert tuple(loaded.axis_name) == ("easting", "northing")
+    assert tuple(loaded.xy_of_reference) == (500000.0, 4000000.0)
+
+
+def test_roundtrip_preserves_field_units(square_grid, tmp_path):
+    grid = TriangleModelGrid.load(square_grid.save(str(tmp_path / "seed.nc")))
+    grid.add_field(
+        "elevation", np.arange(grid.number_of_nodes, dtype=float), at="node", units="meters"
+    )
+    loaded = TriangleModelGrid.load(grid.save(str(tmp_path / "units.nc")))
+    assert loaded.at_node.dataset["elevation"].attrs.get("units") == "meters"
 
 
 def test_roundtrip_fields(square_grid, tmp_path):

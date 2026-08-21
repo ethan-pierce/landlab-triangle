@@ -41,7 +41,7 @@ SCALAR_PLOTTERS = [
 @pytest.fixture
 def grid():
     return TriangleModelGrid(
-        ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+        [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     )
 
 

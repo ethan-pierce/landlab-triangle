@@ -2,33 +2,38 @@ import numpy as np
 import shapely
 from landlab.graph.dual import DualGraph
 from landlab.graph.graph import Graph
-from landlab.graph.sort.sort import reverse_one_to_many, sort_links_at_patch
+from landlab.graph.sort.sort import (
+    reorient_link_dirs,
+    reverse_one_to_many,
+    sort_links_at_patch,
+)
 from shapely.validation import explain_validity
 
 from landlab_triangle.mesh import TriangleMesh
 
 
+def _polygon_from_boundary(x_of_boundary, y_of_boundary, interior_rings):
+    polygon = shapely.Polygon(zip(x_of_boundary, y_of_boundary, strict=True), holes=interior_rings)
+    if not polygon.is_valid:
+        raise ValueError(
+            "Shapely considers the input geometry invalid for the following "
+            f"reasons:\n{explain_validity(polygon)}"
+        )
+    return polygon
+
+
 class TriangleGraph(Graph):
     def __init__(
         self,
-        exterior_y_and_x: tuple[np.ndarray, np.ndarray],
-        holes: np.ndarray = None,
-        triangle_opts: str = "",
-        timeout: float = 10,
-        sort: bool = False,
+        x_of_boundary,
+        y_of_boundary,
+        interior_rings=None,
+        triangle_options=TriangleMesh.default_opts,
+        timeout=10,
     ):
-        polygon = shapely.Polygon(
-            zip(exterior_y_and_x[1], exterior_y_and_x[0], strict=True), holes=holes
-        )
+        polygon = _polygon_from_boundary(x_of_boundary, y_of_boundary, interior_rings)
 
-        if not polygon.is_valid:
-            raise ValueError(
-                "Shapely considers the input geometry invalid for the following"
-                f" reasons:\n{explain_validity(polygon)}"
-            )
-
-        mesh_generator = TriangleMesh(polygon, opts=triangle_opts, timeout=timeout)
-
+        mesh_generator = TriangleMesh(polygon, opts=triangle_options, timeout=timeout)
         mesh_generator.triangulate()
         self._delaunay = mesh_generator.delaunay
 
@@ -39,11 +44,14 @@ class TriangleGraph(Graph):
 
         Graph.__init__(
             self,
-            (self._delaunay["nodes"]["x"], self._delaunay["nodes"]["y"]),
+            (self._delaunay["nodes"]["y"], self._delaunay["nodes"]["x"]),
             links=nodes_at_link,
             patches=links_at_patch,
-            sort=sort,
+            sort=False,
         )
+
+        with self.thawed():
+            reorient_link_dirs(self)
 
     def _get_nodes_and_links_at_patch(self) -> np.ndarray:
         """From the Delaunay graph, identify the nodes and links adjacent to each patch."""
@@ -69,17 +77,14 @@ class TriangleGraph(Graph):
         return nodes_at_patch, links_at_patch
 
     @classmethod
-    def from_shapefile(cls, path_to_file: str, triangle_opts: str = "", timeout: float = 10):
-        """Initialize a TriangleGraph from an input file."""
-        polygon = TriangleMesh.read_input_file(path_to_file)
-        nodes_y = np.array(polygon.exterior.xy[1])
-        nodes_x = np.array(polygon.exterior.xy[0])
-        holes = polygon.interiors
-
+    def from_vector_file(cls, path, triangle_options=TriangleMesh.default_opts, timeout=10):
+        """Build a grid from any vector file GeoPandas reads; interior rings become holes."""
+        polygon = TriangleMesh.read_input_file(path)
         return cls(
-            (nodes_y, nodes_x),
-            holes=holes,
-            triangle_opts=triangle_opts,
+            np.asarray(polygon.exterior.xy[0]),
+            np.asarray(polygon.exterior.xy[1]),
+            interior_rings=list(polygon.interiors),
+            triangle_options=triangle_options,
             timeout=timeout,
         )
 
@@ -87,31 +92,22 @@ class TriangleGraph(Graph):
 class DualTriangleGraph(DualGraph, TriangleGraph):
     def __init__(
         self,
-        exterior_y_and_x: tuple[np.ndarray, np.ndarray],
-        holes: np.ndarray = None,
-        triangle_opts: str = "",
-        timeout: float = 10,
-        sort: bool = False,
+        x_of_boundary,
+        y_of_boundary,
+        interior_rings=None,
+        triangle_options=TriangleMesh.default_opts,
+        timeout=10,
     ):
-        polygon = shapely.Polygon(
-            zip(exterior_y_and_x[1], exterior_y_and_x[0], strict=True), holes=holes
-        )
+        polygon = _polygon_from_boundary(x_of_boundary, y_of_boundary, interior_rings)
 
-        if not polygon.is_valid:
-            raise ValueError(
-                "Shapely considers the input geometry invalid for the following reasons:\n"
-                + str(explain_validity(polygon))
-            )
-
-        mesh_generator = TriangleMesh(polygon, opts=triangle_opts, timeout=timeout)
-
+        mesh_generator = TriangleMesh(polygon, opts=triangle_options, timeout=timeout)
         mesh_generator.triangulate()
         self._delaunay = mesh_generator.delaunay
         self._voronoi = mesh_generator.voronoi
 
-        self._build_from_dicts(sort=sort)
+        self._build_from_dicts()
 
-    def _build_from_dicts(self, sort: bool = False):
+    def _build_from_dicts(self):
         """Build the dual graph from the ``_delaunay`` and ``_voronoi`` dicts.
 
         Shared by fresh triangulation and UGRID load so both build the grid the
@@ -167,8 +163,8 @@ class DualTriangleGraph(DualGraph, TriangleGraph):
                     f"triangle has generated a graph that contains zero-length {edge}."
                 )
 
-        if sort:
-            self.sort()
+        with self.thawed():
+            reorient_link_dirs(self)
 
     def _number_cells(self) -> tuple[np.ndarray, np.ndarray]:
         """Map between grid cells and nodes."""
