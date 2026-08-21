@@ -1,11 +1,13 @@
 """Tests for the TriangleMesh object."""
 
+import subprocess
+
 import numpy as np
 import pytest
 import shapely
 from numpy.testing import assert_array_equal
 
-from landlab_triangle.mesh import TriangleMesh
+from landlab_triangle.mesh import TriangleError, TriangleMesh
 
 if not TriangleMesh.validate_triangle():
     pytestmark = pytest.mark.skip(reason="triangle is not installed")
@@ -118,3 +120,33 @@ def test_geojson_then_points_does_not_crash(geojson_concave_polygon):
 
     assert mesh.delaunay is not None
     assert mesh.voronoi is not None
+
+
+def test_triangulate_surfaces_nonzero_exit(monkeypatch):
+    """A nonzero Triangle exit surfaces its own message as a TriangleError."""
+    mesh = TriangleMesh.from_points(xy_points, opts="pqDevjz")
+
+    def fake_run(*args, **kwargs):
+        return subprocess.CompletedProcess(args, returncode=1, stdout=b"Error:  bad geometry.\n")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with pytest.raises(TriangleError) as excinfo:
+        mesh.triangulate()
+
+    message = str(excinfo.value)
+    assert "exit code 1" in message
+    assert "bad geometry" in message
+
+
+def test_triangulate_surfaces_timeout(monkeypatch):
+    """A Triangle timeout surfaces as a TriangleError naming the timeout."""
+    mesh = TriangleMesh.from_points(xy_points, opts="pqDevjz")
+
+    def fake_run(*args, **kwargs):
+        raise subprocess.TimeoutExpired(cmd="triangle", timeout=mesh._timeout)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with pytest.raises(TriangleError, match="did not finish within"):
+        mesh.triangulate()

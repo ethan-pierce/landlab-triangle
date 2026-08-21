@@ -1,5 +1,5 @@
 from .graph import DualTriangleGraph, TriangleGraph
-from .mesh import TriangleMesh
+from .mesh import TriangleError, TriangleMesh
 from .plot import (
     plot_cell,
     plot_corner,
@@ -14,6 +14,7 @@ from .triangle import TriangleModelGrid
 
 __all__ = [
     "DualTriangleGraph",
+    "TriangleError",
     "TriangleGraph",
     "TriangleMesh",
     "TriangleModelGrid",

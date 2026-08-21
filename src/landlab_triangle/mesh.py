@@ -29,6 +29,10 @@ import pandas as pd
 import shapely
 
 
+class TriangleError(RuntimeError):
+    """Raised when the Triangle binary fails to produce a mesh."""
+
+
 class TriangleMesh:
     """Generate a mesh from a shapefile or array of points.
 
@@ -391,7 +395,14 @@ class TriangleMesh:
         return delaunay, voronoi
 
     def triangulate(self):
-        """Perform the Delaunay triangulation."""
+        """Perform the Delaunay triangulation.
+
+        Raises
+        ------
+        TriangleError
+            If Triangle exits with a nonzero status or does not finish within
+            ``timeout`` seconds.
+        """
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             tmp_path = pathlib.Path(tmpdir)
 
@@ -399,13 +410,25 @@ class TriangleMesh:
                 tmp_path / "tri.poly", self._vertices, self._segments, self._holes
             )
 
-            result = subprocess.run(
-                [self.triangle, f"-{self.options}", "tri.poly"],
-                timeout=self._timeout,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                cwd=tmp_path,
-            )
+            try:
+                result = subprocess.run(
+                    [self.triangle, f"-{self.options}", "tri.poly"],
+                    timeout=self._timeout,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    cwd=tmp_path,
+                )
+            except subprocess.TimeoutExpired as error:
+                raise TriangleError(
+                    f"Triangle did not finish within {self._timeout} seconds. "
+                    "Increase 'timeout' or simplify the input."
+                ) from error
+
+            if result.returncode != 0:
+                raise TriangleError(
+                    f"Triangle failed (exit code {result.returncode}):\n"
+                    + result.stdout.decode(errors="replace")
+                )
 
             try:
                 self.delaunay, self.voronoi = self._read_mesh_files(
@@ -416,7 +439,7 @@ class TriangleMesh:
                     v_edge=tmp_path / "tri.1.v.edge",
                 )
             except FileNotFoundError as error:
-                raise OSError(
-                    "Triangle failed to generate the mesh, raising the following error:\n"
-                    + result.stdout.decode()
+                raise TriangleError(
+                    "Triangle exited cleanly but wrote no mesh:\n"
+                    + result.stdout.decode(errors="replace")
                 ) from error
