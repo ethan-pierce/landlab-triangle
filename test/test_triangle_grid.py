@@ -1,6 +1,5 @@
 """Tests for the TriangleModelGrid class."""
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -54,12 +53,3 @@ def test_grid_init():
         ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
     )
     assert grid.number_of_corners == grid.number_of_patches
-
-
-def test_plot_nodes_and_links(square_grid):
-    plot = square_grid.plot_nodes_and_links()
-
-    assert len(plot.axes) == 1
-    assert plot.axes[0].has_data()
-
-    plt.close()

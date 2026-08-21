@@ -4,7 +4,6 @@ manage unstructured, irregular grids for 2D numerical models.
 
 import pathlib
 
-import matplotlib.pyplot as plt
 import numpy as np
 from landlab.grid.base import ModelGrid
 
@@ -102,34 +101,6 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
         """Initialize a new TriangleModelGrid from a dict with "x" and "y" keys."""
         args = (kwds.pop("x"), kwds.pop("y"))
         return cls(*args, **kwds)
-
-    def plot_nodes_and_links(
-        self,
-        nodes_args: dict = None,
-        links_args: dict = None,
-        subplots_args: dict = None,
-    ):
-        """Produce a plot of nodes and links."""
-        if nodes_args is None:
-            nodes_args = {}
-        if links_args is None:
-            links_args = {}
-        if subplots_args is None:
-            subplots_args = {}
-
-        fig, ax = plt.subplots(**subplots_args)
-
-        for link in np.arange(self.number_of_links):
-            head, tail = self.nodes_at_link[link]
-            ax.plot(
-                [self.x_of_node[head], self.x_of_node[tail]],
-                [self.y_of_node[head], self.y_of_node[tail]],
-                **links_args,
-            )
-
-        ax.scatter(self.x_of_node, self.y_of_node, **nodes_args)
-
-        return fig
 
     def save(self, path, clobber=False):
         """Save the grid and all its fields to a CF-UGRID netCDF file.

@@ -94,3 +94,46 @@ grid = TriangleModelGrid(
     triangle_opts="pqa0.1Devjz"  # 'a0.1' sets max area to 0.1
 )
 ```
+
+## Plotting
+
+Field-aware plotters live in `landlab_triangle` as free functions that take the
+grid first and draw on the current axes (or one you pass as `ax=`). Each returns
+the matplotlib artist, so a bare call followed by `plt.show()` just works.
+
+There is one plotter per grid element — `plot_node`, `plot_link`, `plot_patch`,
+`plot_corner`, `plot_face`, `plot_cell` — plus `plot_vector` for components and
+`plot_mesh` for the bare skeleton. The value argument accepts either a
+field-name string or a raw array.
+
+```python
+import matplotlib.pyplot as plt
+from landlab_triangle import TriangleModelGrid, plot_node, plot_cell, plot_vector
+
+grid = TriangleModelGrid(
+    ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
+)
+grid.add_field("elevation", grid.x_of_node + grid.y_of_node, at="node")
+
+# Smooth node field over the full domain, including perimeter nodes
+plot_node(grid, "elevation", cmap="terrain", colorbar_label="elevation (m)")
+plt.show()
+
+# Flat-colored Voronoi cells from a raw array
+import numpy as np
+plot_cell(grid, np.arange(grid.number_of_cells, dtype=float))
+plt.show()
+
+# Component vectors as arrows colored by magnitude
+u = np.ones(grid.number_of_nodes)
+plot_vector(grid, u, u, at="node")
+plt.show()
+```
+
+Common matplotlib keywords (`vmin`, `vmax`, `norm`, `alpha`, `shading`, ...)
+pass straight through to the underlying call. `plot_node` defaults to Gouraud
+shading; pass `shading="flat"` for per-triangle color instead.
+
+To reconstruct a vector from flux-at-links, map the link components to nodes
+with Landlab's mappers (e.g. `map_link_vector_components_to_node`) first, then
+call `plot_vector` on the results.
