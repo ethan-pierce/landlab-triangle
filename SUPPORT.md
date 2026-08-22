@@ -16,7 +16,7 @@ Thanks for using landlab-triangle! Here's how to get help.
 ## Bugs and feature requests
 
 Open a [GitHub issue](https://github.com/ethan-pierce/landlab-triangle/issues).
-For bugs, please include a minimal example, the `triangle_opts` you used, and
+For bugs, please include a minimal example, the `triangle_options` you used, and
 the full traceback.
 
 ## Private inquiries

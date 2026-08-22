@@ -1,5 +1,5 @@
 [project]
-authors = [{name = "Ethan", email = "ethan.g.pierce@dartmouth.edu"}]
+authors = [{name = "Ethan Pierce", email = "ethan.g.pierce@dartmouth.edu"}]
 name = "landlab-triangle"
 requires-python = ">= 3.13"
 version = "1.0.0"
@@ -13,13 +13,22 @@ dependencies = [
     "netcdf4>=1.6.0"
 ]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
 ]
 keywords = ["landlab", "triangle", "mesh", "unstructured", "grid"]
 license = "MIT"
 license-files = ["LICENSE", "NOTICE", "src/landlab_triangle/_triangle_src/LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/ethan-pierce/landlab-triangle"
+Repository = "https://github.com/ethan-pierce/landlab-triangle"
+Issues = "https://github.com/ethan-pierce/landlab-triangle/issues"
 
 [build-system]
 build-backend = "hatchling.build"

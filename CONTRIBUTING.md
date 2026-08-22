@@ -14,7 +14,7 @@ Open an issue on the
 For bug reports, please include:
 
 - a minimal example that reproduces the problem,
-- the `triangle_opts` string you passed,
+- the `triangle_options` string you passed,
 - the full traceback, and
 - your operating system and Python version.
 
