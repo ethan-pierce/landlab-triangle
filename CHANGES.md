@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-22
+
+First stable release.
+
 ### Added
 
-- Community health files: `CITATION.cff`, `CONTRIBUTING.md`,
-  `CODE-OF-CONDUCT.md`, `CREDITS.md`, `SUPPORT.md`, and `CHANGES.md`.
+- Build unstructured triangular Landlab grids from a boundary polygon, with
+  interior holes and control over mesh quality and resolution.
+- Create a grid directly, from a dictionary, or from a vector file (shapefile,
+  GeoJSON, GeoPackage, ...).
+- Save and load grids as CF-UGRID netCDF for ParaView, QGIS, xarray, and
+  uxarray.
+- Plot node, link, patch, corner, face, and cell fields, vectors, and the bare
+  mesh.
 
-### Changed
-
-- README usage and plotting examples now match the frozen v1.0 API
-  (`x_of_boundary`/`y_of_boundary`, `interior_rings`, `triangle_options`,
-  `from_vector_file`) and use an irregular example polygon that meshes
-  reliably.
-
-[Unreleased]: https://github.com/ethan-pierce/landlab-triangle/commits/main
+[Unreleased]: https://github.com/ethan-pierce/landlab-triangle/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ethan-pierce/landlab-triangle/releases/tag/v1.0.0
