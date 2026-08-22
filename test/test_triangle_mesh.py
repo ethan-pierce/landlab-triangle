@@ -9,7 +9,9 @@ from numpy.testing import assert_array_equal
 
 from landlab_triangle.mesh import TriangleError, TriangleMesh
 
-if not TriangleMesh.validate_triangle():
+try:
+    TriangleMesh.validate_triangle()
+except FileNotFoundError:
     pytestmark = pytest.mark.skip(reason="triangle is not installed")
 
 
@@ -51,7 +53,7 @@ def test_triangulate_from_points():
 
 def test_init_from_geojson(geojson_concave_polygon):
     """Test initialization from a geojson file."""
-    mesh = TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz")
+    mesh = TriangleMesh.from_vector_file(geojson_concave_polygon, opts="pqDevjz")
 
     assert_array_equal(
         mesh._vertices,
@@ -80,13 +82,13 @@ def test_init_from_geojson(geojson_concave_polygon):
 
 def test_triangulate_from_geojson(geojson_concave_polygon):
     """Test triangulation routine."""
-    mesh = TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz")
+    mesh = TriangleMesh.from_vector_file(geojson_concave_polygon, opts="pqDevjz")
     mesh.triangulate()
 
 
 def test_segment(geojson_concave_polygon):
     "Test segmentation routine."
-    mesh = TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz")
+    mesh = TriangleMesh.from_vector_file(geojson_concave_polygon, opts="pqDevjz")
     segments = mesh._segment(mesh._poly)
 
     assert len(mesh._holes) == len(mesh._poly.interiors)
@@ -103,7 +105,7 @@ def test_no_duplicate_vertices(geojson_concave_polygon):
     trip an out-of-bounds read in Triangle's duplicate-vertex handling."""
     for mesh in (
         TriangleMesh.from_points(xy_points, opts="pqDevjz"),
-        TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz"),
+        TriangleMesh.from_vector_file(geojson_concave_polygon, opts="pqDevjz"),
     ):
         unique = np.unique(mesh._vertices, axis=0)
         assert unique.shape[0] == mesh._vertices.shape[0]
@@ -113,7 +115,7 @@ def test_geojson_then_points_does_not_crash(geojson_concave_polygon):
     """Reading a geojson loads GDAL, which shifts the process memory layout.
     A duplicate vertex would then crash Triangle; triangulating from points
     afterwards in the same process must still succeed."""
-    TriangleMesh.from_shapefile(geojson_concave_polygon, opts="pqDevjz").triangulate()
+    TriangleMesh.from_vector_file(geojson_concave_polygon, opts="pqDevjz").triangulate()
 
     mesh = TriangleMesh.from_points(xy_points, opts="pqDevjz")
     mesh.triangulate()

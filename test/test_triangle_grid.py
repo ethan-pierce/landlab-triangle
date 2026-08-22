@@ -6,14 +6,16 @@ import pytest
 from landlab_triangle.mesh import TriangleMesh
 from landlab_triangle.triangle import TriangleModelGrid
 
-if not TriangleMesh.validate_triangle():
+try:
+    TriangleMesh.validate_triangle()
+except FileNotFoundError:
     pytestmark = pytest.mark.skip(reason="triangle is not installed")
 
 
 @pytest.fixture(scope="session")
 def square_grid():
     return TriangleModelGrid(
-        ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
+        [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa1Devjz"
     )
 
 
@@ -50,6 +52,56 @@ def test_boundary_nodes_on_boundary(square_grid):
 
 def test_grid_init():
     grid = TriangleModelGrid(
-        ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
+        [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa1Devjz"
     )
     assert grid.number_of_corners == grid.number_of_patches
+
+
+def _links_oriented_up_and_right(grid):
+    theta = np.mod(grid.angle_of_link, 2.0 * np.pi)
+    return (theta < 0.75 * np.pi) | (theta >= 1.75 * np.pi)
+
+
+def test_links_point_up_and_right(square_grid):
+    # A flipped link silently negates advection/gradient components, so every
+    # link must obey landlab's tail->head convention (angle outside [135, 315)).
+    assert np.all(_links_oriented_up_and_right(square_grid))
+
+
+def test_from_dict_matches_direct_construction():
+    grid = TriangleModelGrid.from_dict(
+        {
+            "x": [0.0, 10.0, 10.0, 0.0],
+            "y": [-1.0, -1.0, 11.0, 11.0],
+            "triangle_options": "pqa1Devjz",
+        }
+    )
+    assert grid.number_of_cells > 0
+    assert np.all(_links_oriented_up_and_right(grid))
+
+
+def test_from_dict_does_not_mutate_caller():
+    params = {
+        "x": [0.0, 10.0, 10.0, 0.0],
+        "y": [-1.0, -1.0, 11.0, 11.0],
+        "triangle_options": "pqa1Devjz",
+    }
+    TriangleModelGrid.from_dict(params)
+    assert set(params) == {"x", "y", "triangle_options"}
+
+
+def test_interior_ring_becomes_a_hole():
+    ring = [(3.0, 3.0), (7.0, 3.0), (7.0, 7.0), (3.0, 7.0)]
+    grid = TriangleModelGrid(
+        [0.0, 10.0, 10.0, 0.0],
+        [0.0, 0.0, 10.0, 10.0],
+        interior_rings=[ring],
+        triangle_options="pqa2Devjz",
+    )
+    in_hole = (
+        (grid.x_of_node > 3.0)
+        & (grid.x_of_node < 7.0)
+        & (grid.y_of_node > 3.0)
+        & (grid.y_of_node < 7.0)
+    )
+    assert not np.any(in_hole)

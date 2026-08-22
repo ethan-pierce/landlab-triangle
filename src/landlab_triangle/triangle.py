@@ -9,87 +9,65 @@ from landlab.grid.base import ModelGrid
 
 from landlab_triangle import ugrid
 from landlab_triangle.graph import DualTriangleGraph
+from landlab_triangle.mesh import TriangleMesh
 
 
 class TriangleModelGrid(DualTriangleGraph, ModelGrid):
-    """This inherited class implements an unstructured grid from dual
-    Delaunay and Voronoi graphs. By convention, nodes, links, and patches
-    compose a Delaunay triangulation, while corners, faces, and cells
-    compose the corresponding Voronoi tesselation. Uses the Triangle
-    software package to build the mesh.
+    """An unstructured Landlab grid built from dual Delaunay and Voronoi graphs.
 
-    Create an unstructured grid from points whose coordinates are given
-    by the arrays *x*, *y*.
-
-    Returns
-    -------
-    TriangleModelGrid
-        A newly-created grid.
+    Nodes, links, and patches compose a Delaunay triangulation; corners, faces,
+    and cells compose the corresponding Voronoi tesselation. Jonathan Shewchuk's
+    Triangle package meshes the interior of a boundary polygon.
 
     See also
     --------
-    TriangleGraph.from_shapefile
-        Constructs the grid from a shapefile, geojson, geopackage, etc.
-
-    Examples
-    --------
+    TriangleModelGrid.from_vector_file
+        Build the grid from a GeoJSON, GeoPackage, shapefile, etc.
     """
 
     def __init__(
         self,
-        exterior_y_and_x: tuple[np.ndarray, np.ndarray],
-        holes=None,
-        triangle_opts="pqDevjz",
-        timeout=11,
-        reorient_links=False,
+        x_of_boundary,
+        y_of_boundary,
+        interior_rings=None,
+        *,
+        triangle_options=TriangleMesh.default_opts,
+        timeout=10,
         xy_of_reference=(0.0, 0.0),
         xy_axis_name=("x", "y"),
         xy_axis_units="-",
-        sort=False,
     ):
-        """Create a TriangleModelGrid from a set of points.
-
-        Create an unstructured grid from points whose coordinates are given
-        by the arrays *x*, *y*.
+        """Mesh the interior of a boundary polygon.
 
         Parameters
         ----------
-        x : array_like
-            x-coordinate of points
-        y : array_like
-            y-coordinate of points
-        holes : array_like
-            (N, 2) shaped array with coordinates of any holes in the domain
-        triangle_opts : str
-            command-line options for the Triangle meshing software
-        timeout : float
-            how many seconds to allow Triangle to run before terminating
-        reorient_links (optional) : bool
-            whether to point all links to the upper-right quadrant
+        x_of_boundary, y_of_boundary : array_like
+            Coordinates of the exterior boundary vertices, in order. These are
+            the outline; Triangle generates the interior nodes.
+        interior_rings : sequence of rings, optional
+            Holes, each an (N, 2) sequence of (x, y) vertices, as Shapely's
+            ``holes`` argument.
+        triangle_options : str, optional
+            Command-line switches for Triangle (default ``"pqDevjz"``).
+        timeout : float, optional
+            Seconds to allow Triangle to run before raising ``TriangleError``.
         xy_of_reference : tuple, optional
-            Coordinate value in projected space of (0., 0.)
-            Default is (0., 0.)
-
-        Returns
-        -------
-        TriangleModelGrid
-            A newly-created grid.
+            Coordinate in projected space of ``(0.0, 0.0)``.
+        xy_axis_name : tuple of str, optional
+        xy_axis_units : str, optional
 
         Raises
         ------
         TriangleError
             If Triangle fails to mesh the domain or exceeds ``timeout`` seconds.
-
-        Examples
-        --------
         """
         DualTriangleGraph.__init__(
             self,
-            exterior_y_and_x,
-            holes=holes,
-            triangle_opts=triangle_opts,
+            x_of_boundary,
+            y_of_boundary,
+            interior_rings=interior_rings,
+            triangle_options=triangle_options,
             timeout=timeout,
-            sort=sort,
         )
         ModelGrid.__init__(
             self,
@@ -102,10 +80,16 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
         self._node_status[self.perimeter_nodes] = self.BC_NODE_IS_FIXED_VALUE
 
     @classmethod
-    def from_dict(cls, kwds):
-        """Initialize a new TriangleModelGrid from a dict with "x" and "y" keys."""
-        args = (kwds.pop("x"), kwds.pop("y"))
-        return cls(*args, **kwds)
+    def from_dict(cls, params):
+        """Build a grid from a dict with ``"x"``/``"y"`` boundary coordinates.
+
+        Remaining keys pass through as keyword arguments; the caller's dict is
+        left unmodified.
+        """
+        params = dict(params)
+        x_of_boundary = params.pop("x")
+        y_of_boundary = params.pop("y")
+        return cls(x_of_boundary, y_of_boundary, **params)
 
     def save(self, path, clobber=False):
         """Save the grid and all its fields to a CF-UGRID netCDF file.
@@ -150,18 +134,19 @@ class TriangleModelGrid(DualTriangleGraph, ModelGrid):
         grid._delaunay = data["delaunay"]
         grid._voronoi = data["voronoi"]
 
-        DualTriangleGraph._build_from_dicts(grid, sort=False)
+        DualTriangleGraph._build_from_dicts(grid)
 
         ModelGrid.__init__(
             grid,
-            xy_axis_name=("x", "y"),
+            xy_axis_name=data["axis_name"],
             xy_axis_units=data["units"],
+            xy_of_reference=data["xy_of_reference"],
         )
 
         grid._node_status = np.asarray(data["node_status"], dtype=np.uint8)
 
         for location, field_group in data["fields"].items():
-            for name, values in field_group.items():
-                grid.add_field(name, values, at=location, clobber=True)
+            for name, (values, units) in field_group.items():
+                grid.add_field(name, values, at=location, units=units, clobber=True)
 
         return grid

@@ -51,7 +51,7 @@ class TriangleMesh:
 
     See Also
     --------
-    TriangleMesh.from_shapefile : Constructor from a shapefile.
+    TriangleMesh.from_vector_file : Constructor from a vector file.
     TriangleMesh.from_points : Constructor from an array of (x, y) points.
 
     Examples
@@ -198,15 +198,13 @@ class TriangleMesh:
 
         if len(shape) != 1:
             raise TypeError(
-                "Shapefile must represent exactly 1 object."
+                "Input file must represent exactly 1 object."
                 " Check that there is only one input geometry and try again."
             )
 
         if isinstance(shape[0], shapely.MultiPolygon):
             if len(shape[0].geoms) != 1:
-                raise TypeError(
-                    "Each shape within the input shapefile must contain exactly 1 geometry."
-                )
+                raise TypeError("Each shape within the input file must contain exactly 1 geometry.")
 
             polygon = shape[0].geoms[0]
 
@@ -252,8 +250,8 @@ class TriangleMesh:
         return np.array(holes) if len(holes) else None
 
     @classmethod
-    def from_shapefile(cls, path_to_file: str, opts: str = default_opts, timeout=10):
-        """Initialize this instance with a path to a shapefile."""
+    def from_vector_file(cls, path_to_file: str, opts: str = default_opts, timeout=10):
+        """Initialize this instance with a path to any vector file GeoPandas reads."""
         polygon = cls.read_input_file(path_to_file)
         return cls(polygon, opts=opts, timeout=timeout)
 
@@ -261,12 +259,12 @@ class TriangleMesh:
     def from_points(
         cls,
         points: np.ndarray,
-        holes: np.ndarray = None,
+        interior_rings: np.ndarray = None,
         opts: str = default_opts,
         timeout=10,
     ):
         """Initialize this instance with an array of (x, y) coordinates."""
-        polygon = shapely.Polygon(points, holes=holes)
+        polygon = shapely.Polygon(points, holes=interior_rings)
         return cls(polygon, opts=opts, timeout=timeout)
 
     def _segment(self, poly: shapely.Polygon) -> np.ndarray:

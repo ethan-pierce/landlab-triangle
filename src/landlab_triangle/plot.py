@@ -20,7 +20,7 @@ def plot_node(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=No
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_node
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> _ = grid.add_field("z", grid.x_of_node, at="node")
     >>> artist = plot_node(grid, "z")
@@ -44,7 +44,7 @@ def plot_link(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=No
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_link
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> values = np.arange(grid.number_of_links, dtype=float)
     >>> artist = plot_link(grid, values)
@@ -65,7 +65,7 @@ def plot_patch(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=N
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_patch
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> values = np.arange(grid.number_of_patches, dtype=float)
     >>> artist = plot_patch(grid, values)
@@ -88,7 +88,7 @@ def plot_corner(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_corner
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> values = np.arange(grid.number_of_corners, dtype=float)
     >>> artist = plot_corner(grid, values)
@@ -109,7 +109,7 @@ def plot_face(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=No
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_face
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> values = np.arange(grid.number_of_faces, dtype=float)
     >>> artist = plot_face(grid, values)
@@ -130,7 +130,7 @@ def plot_cell(grid, values, ax=None, cmap=None, colorbar=True, colorbar_label=No
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_cell
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> values = np.arange(grid.number_of_cells, dtype=float)
     >>> artist = plot_cell(grid, values)
@@ -160,7 +160,7 @@ def plot_vector(
     >>> import numpy as np
     >>> from landlab_triangle import TriangleModelGrid, plot_vector
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> u = np.ones(grid.number_of_nodes)
     >>> artist = plot_vector(grid, u, u, at="node")
@@ -182,7 +182,7 @@ def plot_mesh(grid, ax=None, **kwargs):
     --------
     >>> from landlab_triangle import TriangleModelGrid, plot_mesh
     >>> grid = TriangleModelGrid(
-    ...     ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa5Devjz"
+    ...     [0.0, 10.0, 10.0, 0.0], [-1.0, -1.0, 11.0, 11.0], triangle_options="pqa5Devjz"
     ... )
     >>> artist = plot_mesh(grid, color="0.5")
     """
