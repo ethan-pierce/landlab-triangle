@@ -25,3 +25,13 @@ Features and cleanup targeted for a clean, feature-rich, citable v1.0 release.
 
 6. **Error surfacing** — Restore explicit handling of Triangle's exit code so
    failures report Triangle's own message instead of a missing-file error.
+
+7. **Zero-length faces on symmetric domains** — Axis-aligned or otherwise
+   symmetric boundaries produce cocircular nodes, yielding zero-length Voronoi
+   faces that abort construction with `RuntimeError: triangle has generated a
+   graph that contains zero-length face` (graph.py). A plain square fails at
+   every area constraint; a rectangle survives only at a couple of coarse `a`
+   values. Any interior hole or slight irregularity breaks the symmetry and
+   works. Perturb symmetric inputs or collapse degenerate faces so simple
+   domains just work. The README examples currently sidestep this with an
+   irregular example polygon.

@@ -26,23 +26,23 @@ remains under Jonathan Shewchuk's non-commercial license.
 
 ```python
 from landlab_triangle import TriangleModelGrid
-import numpy as np
 
-# Create a grid directly with exterior coordinates and optional holes
-exterior_y = [-1.0, -1.0, 11.0, 11.0]
-exterior_x = [0.0, 10.0, 10.0, 0.0]
+# Boundary vertices in order. x and y are separate arguments, x first.
+x_of_boundary = [0.0, 10.0, 12.0, 6.0, -1.0]
+y_of_boundary = [0.0, -1.0, 8.0, 12.0, 7.0]
 
-holes = np.array([[5.0, 5.0]])  # Optional: define interior holes
+# Optional interior holes: each ring is a sequence of (x, y) vertices.
+interior_rings = [[(4.0, 4.0), (6.0, 4.0), (6.0, 6.0), (4.0, 6.0)]]
 
 grid = TriangleModelGrid(
-    exterior_y_and_x=(exterior_y, exterior_x),
-    holes=holes,
-    triangle_opts="pqa1Devjz"
+    x_of_boundary,
+    y_of_boundary,
+    interior_rings=interior_rings,
+    triangle_options="pqa1Devjz",
 )
 
 print(f"Number of nodes: {grid.number_of_nodes}")
 print(f"Number of cells: {grid.number_of_cells}")
-print(f"Number of holes: {len(grid._holes)}")
 ```
 
 ### Option 2: from a dictionary
@@ -52,46 +52,50 @@ from landlab_triangle import TriangleModelGrid
 
 # Create a grid from a dictionary with "x" and "y" keys
 grid_params = {
-    "x": [0.0, 10.0, 10.0, 0.0],
-    "y": [0.0, 0.0, 10.0, 10.0],
-    "triangle_opts": "pqDevjz"
+    "x": [0.0, 10.0, 12.0, 6.0, -1.0],
+    "y": [0.0, -1.0, 8.0, 12.0, 7.0],
+    "triangle_options": "pqa1Devjz",
 }
 
 grid = TriangleModelGrid.from_dict(grid_params)
 ```
 
-### Option 3: from a shapefile
+Any keys beyond `"x"` and `"y"` pass through as keyword arguments to the
+constructor.
+
+### Option 3: from a vector file
 
 ```python
 from landlab_triangle import TriangleModelGrid
 
-# Create a grid from a shapefile, GeoJSON, or other supported format
-grid = TriangleModelGrid.from_shapefile(
+# Build from any vector file GeoPandas can read (shapefile, GeoJSON,
+# GeoPackage, ...). Interior rings in the file become holes automatically.
+grid = TriangleModelGrid.from_vector_file(
     "path/to/polygon.geojson",
-    triangle_opts="pqDevjz",
-    timeout=10
+    triangle_options="pqDevjz",
+    timeout=10,
 )
 
-# The grid automatically handles holes defined in the input file
-print(f"Number of holes: {len(grid._holes)}")
+print(f"Number of nodes: {grid.number_of_nodes}")
 ```
 
 ## Triangle options
 
-The `triangle_opts` parameter controls the behavior of the Triangle meshing software. Common options include:
+The `triangle_options` parameter controls the behavior of the Triangle meshing software (default `"pqDevjz"`). Common options include:
 
 - **q**: Quality mesh generation - ensures no angles smaller than N degrees (defaults to 20)
 - **a**: Area constraint - limits the maximum area of triangles
 
-**Timeout**: The `timeout` parameter (in seconds) prevents the meshing process from running indefinitely if Triangle encounters complex geometries.
+**Timeout**: The `timeout` parameter (in seconds) prevents the meshing process from running indefinitely if Triangle encounters complex geometries. It defaults to 10.
 
 ### Example with area constraint
 
 ```python
-# Create a grid with maximum triangle area of 0.1
+# Reusing the boundary from Option 1, cap the maximum triangle area at 0.1.
 grid = TriangleModelGrid(
-    exterior_y_and_x=(exterior_y, exterior_x),
-    triangle_opts="pqa0.1Devjz"  # 'a0.1' sets max area to 0.1
+    x_of_boundary,
+    y_of_boundary,
+    triangle_options="pqa0.1Devjz",  # 'a0.1' sets max area to 0.1
 )
 ```
 
@@ -111,7 +115,7 @@ import matplotlib.pyplot as plt
 from landlab_triangle import TriangleModelGrid, plot_node, plot_cell, plot_vector
 
 grid = TriangleModelGrid(
-    ([-1.0, -1.0, 11.0, 11.0], [0.0, 10.0, 10.0, 0.0]), triangle_opts="pqa1Devjz"
+    [0.0, 10.0, 12.0, 6.0, -1.0], [0.0, -1.0, 8.0, 12.0, 7.0], triangle_options="pqa1Devjz"
 )
 grid.add_field("elevation", grid.x_of_node + grid.y_of_node, at="node")
 
