@@ -137,3 +137,40 @@ shading; pass `shading="flat"` for per-triangle color instead.
 To reconstruct a vector from flux-at-links, map the link components to nodes
 with Landlab's mappers (e.g. `map_link_vector_components_to_node`) first, then
 call `plot_vector` on the results.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set
+up a development environment and submit changes, and please review the
+[Code of Conduct](CODE-OF-CONDUCT.md). If you need help, see
+[SUPPORT.md](SUPPORT.md).
+
+## Citation
+
+If you use landlab-triangle in your work, please cite it. Citation metadata
+lives in [CITATION.cff](CITATION.cff); GitHub renders it as a "Cite this
+repository" button in the sidebar. Each release is archived on Zenodo:
+
+> Pierce, E. landlab-triangle. https://doi.org/10.5281/zenodo.22058174
+
+DOI [10.5281/zenodo.22058174](https://doi.org/10.5281/zenodo.22058174) resolves
+to the latest version.
+
+## Contact
+
+Questions, bugs, and feature requests go to the
+[issue tracker](https://github.com/ethan-pierce/landlab-triangle/issues). For
+private inquiries, email Ethan Pierce at <ethan.g.pierce@dartmouth.edu>.
+
+## License
+
+landlab-triangle is released under the [MIT License](LICENSE). It bundles a
+compiled build of Triangle, which is **not** MIT-licensed and remains under
+Jonathan Shewchuk's non-commercial terms; see [NOTICE](NOTICE) for details.
+
+## Acknowledgments
+
+This work was supported by the National Science Foundation under Award
+[2104102](https://www.nsf.gov/awardsearch/showAward?AWD_ID=2104102)
+(OpenEarthScape). See [CREDITS.md](CREDITS.md) for the full list of contributors
+and acknowledgments.

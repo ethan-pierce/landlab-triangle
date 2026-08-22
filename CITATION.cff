@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: landlab-triangle
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - family-names: Pierce
+    given-names: Ethan
+    email: ethan.g.pierce@dartmouth.edu
+    orcid: "https://orcid.org/0000-0001-8207-2785"
+repository-code: "https://github.com/ethan-pierce/landlab-triangle"
+url: "https://github.com/ethan-pierce/landlab-triangle"
+abstract: >-
+  A Landlab grid type that builds unstructured triangular
+  meshes from a boundary polygon using Jonathan Shewchuk's
+  Triangle mesh generator. Supports irregular boundaries,
+  interior holes, and variable resolution.
+keywords:
+  - landlab
+  - triangle
+  - mesh
+  - unstructured
+  - grid
+  - earth science
+license: MIT
+version: 1.0.0
+doi: 10.5281/zenodo.22058174
+# date-released: set to the tag date when v1.0 is published on Zenodo.
