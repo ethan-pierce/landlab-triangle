@@ -13,3 +13,6 @@ dist_test*/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Claude Code local instructions
+CLAUDE.md
