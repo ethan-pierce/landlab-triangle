@@ -77,8 +77,15 @@ class TriangleGraph(Graph):
         return nodes_at_patch, links_at_patch
 
     @classmethod
-    def from_vector_file(cls, path, triangle_options=TriangleMesh.default_opts, timeout=10):
-        """Build a grid from any vector file GeoPandas reads; interior rings become holes."""
+    def from_vector_file(
+        cls, path, triangle_options=TriangleMesh.default_opts, timeout=10, **kwargs
+    ):
+        """Build a grid from any vector file GeoPandas reads; interior rings become holes.
+
+        Extra keyword arguments pass through to the constructor, so a grid built
+        from a file can still be given ``xy_axis_name``, ``xy_axis_units``, and
+        ``xy_of_reference``.
+        """
         polygon = TriangleMesh.read_input_file(path)
         return cls(
             np.asarray(polygon.exterior.xy[0]),
@@ -86,6 +93,7 @@ class TriangleGraph(Graph):
             interior_rings=list(polygon.interiors),
             triangle_options=triangle_options,
             timeout=timeout,
+            **kwargs,
         )
 
 

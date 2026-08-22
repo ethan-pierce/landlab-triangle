@@ -6,7 +6,9 @@ import pytest
 from landlab_triangle.mesh import TriangleMesh
 from landlab_triangle.triangle import TriangleModelGrid
 
-if not TriangleMesh.validate_triangle():
+try:
+    TriangleMesh.validate_triangle()
+except FileNotFoundError:
     pytestmark = pytest.mark.skip(reason="triangle is not installed")
 
 
